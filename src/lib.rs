@@ -59,6 +59,8 @@ impl BuilderAi {
         self.row = self.get_coordinate().get_row();
         self.col = self.get_coordinate().get_col();
 
+        println!("{:?}", self.rocks);
+
         match self.state {
             State::Ready => {
                 self.do_ready();
@@ -89,7 +91,7 @@ impl BuilderAi {
         let mut spyglass = Spyglass::new(
             self.row,
             self.col,
-            self.world_size,
+            7,
             self.world_size,
             None,
             true,
