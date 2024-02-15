@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use robotics_lib::{
     energy::Energy,
     event::events::Event,
@@ -6,6 +8,7 @@ use robotics_lib::{
     world::{coordinates::Coordinate, tile::Content, World},
 };
 
+use sense_and_find_by_Rustafariani::Lssf;
 use spyglass::spyglass::{Spyglass, SpyglassResult};
 use ui_lib::RunnableUi;
 use utils::is_content_rock;
@@ -15,6 +18,7 @@ pub mod utils;
 enum State {
     Ready,
     Discover,
+    Find,
     Collect,
     Build,
 }
@@ -32,6 +36,7 @@ pub struct BuilderAi {
     state: State,
     row: usize,
     col: usize,
+    rocks: VecDeque<(usize, usize)>,
 }
 
 impl BuilderAi {
@@ -43,6 +48,7 @@ impl BuilderAi {
             state: State::Ready,
             row: 0,
             col: 0,
+            rocks: VecDeque::new(),
         }
     }
 
@@ -56,6 +62,9 @@ impl BuilderAi {
             }
             State::Discover => {
                 self.do_discover(world);
+            }
+            State::Find => {
+                self.do_find(world);
             }
             State::Collect => {
                 self.do_collect(world);
@@ -90,6 +99,21 @@ impl BuilderAi {
                 println!("{:?}", error);
             }
             _ => {}
+        }
+    }
+
+    fn do_find(&mut self, world: &mut World) {
+        let map = robot_map(world).unwrap();
+
+        let mut lssf = Lssf::new();
+
+        lssf.update_map(&map);
+        let _ = lssf.update_cost(self.row, self.col);
+
+        self.rocks.extend(lssf.get_content_vec(&Content::Rock(0)));
+
+        if !self.rocks.is_empty() {
+            self.state = State::Collect;
         }
     }
 
