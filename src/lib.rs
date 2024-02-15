@@ -1,9 +1,10 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, f32::consts::E};
 
+use pmp_street_picasso::{ToolError, ToolStreetPicasso};
 use robotics_lib::{
     energy::Energy,
     event::events::Event,
-    interface::{go, robot_map},
+    interface::{go, robot_map, Direction},
     runner::{backpack::BackPack, Robot, Runnable},
     world::{coordinates::Coordinate, tile::Content, World},
 };
@@ -12,6 +13,7 @@ use sense_and_find_by_Rustafariani::Lssf;
 use spyglass::spyglass::{Spyglass, SpyglassResult};
 use ui_lib::RunnableUi;
 use utils::is_content_rock;
+use OhCrab_collection::collection::{self, CollectTool};
 
 pub mod utils;
 
@@ -21,6 +23,7 @@ enum State {
     Find,
     Collect,
     Build,
+    Terminate,
 }
 
 impl Default for State {
@@ -72,6 +75,9 @@ impl BuilderAi {
             State::Build => {
                 self.do_build(world);
             }
+            State::Terminate => {
+                self.do_terminate(world);
+            }
         }
     }
 
@@ -94,7 +100,7 @@ impl BuilderAi {
         let result = spyglass.new_discover(self, world);
 
         match result {
-            SpyglassResult::Complete => self.state = State::Collect,
+            SpyglassResult::Complete => self.state = State::Find,
             SpyglassResult::Failed(error) => {
                 println!("{:?}", error);
             }
@@ -106,7 +112,6 @@ impl BuilderAi {
         let map = robot_map(world).unwrap();
 
         let mut lssf = Lssf::new();
-
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
@@ -117,9 +122,51 @@ impl BuilderAi {
         }
     }
 
-    fn do_collect(&mut self, world: &mut World) {}
+    fn do_collect(&mut self, world: &mut World) {
+        let map = robot_map(world).unwrap();
 
-    fn do_build(&mut self, world: &mut World) {}
+        let mut count = 0;
+
+        if let Some((row, col)) = self.rocks.pop_front() {
+            if let Some(tile) = map[row][col].as_ref() {
+                let content = &tile.content;
+
+                if let Ok(c) =
+                    CollectTool::collect_content(self, world, content, usize::MAX, usize::MAX)
+                {
+                    count += c;
+                }
+            }
+        }
+
+        if count > 0 {
+            if self.rocks.is_empty() {
+                self.state = State::Build;
+            }
+        } else {
+            if self.rocks.is_empty() {
+                self.state = State::Discover;
+            }
+        }
+    }
+
+    fn do_build(&mut self, world: &mut World) {
+        let result = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 3);
+
+        match result {
+            Ok(()) => {
+                self.state = State::Terminate;
+            }
+            Err(error) => match error {
+                ToolError::NotEnoughMaterial(_) => {
+                    self.state = State::Discover;
+                }
+                _ => {}
+            },
+        }
+    }
+
+    fn do_terminate(&mut self, world: &World) {}
 }
 
 impl Runnable for BuilderAi {
