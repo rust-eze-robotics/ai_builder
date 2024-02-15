@@ -1,0 +1,16 @@
+[package]
+name = "ai_builder"
+authors = ["Aris Tomaselli"]
+version = "1.0.0"
+edition = "2021"
+exclude = [".*"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ui_lib = {git = "ssh://git@github.com/rust-eze-robotics/ui_lib.git", branch = "main"}
+robotics_lib = {version = "0.1.21", registry = "kellnr"}
+spyglass = {version = "0.1.0", registry = "kellnr"}
+sense_and_find_by_Rustafariani = {version = "0.1.0", registry = "kellnr"}
+OhCrab_collection = {version = "0.1.0", registry = "kellnr"}
+pmp_street_picasso = {version = "0.1.0", registry = "kellnr"}
