@@ -4,12 +4,16 @@ use pmp_street_picasso::{ToolError, ToolStreetPicasso};
 use robotics_lib::{
     energy::Energy,
     event::events::Event,
-    interface::{go, robot_map, Direction},
+    interface::{go, robot_map, robot_view, teleport, Direction},
     runner::{backpack::BackPack, Robot, Runnable},
-    world::{coordinates::Coordinate, tile::Content, World},
+    world::{
+        coordinates::Coordinate,
+        tile::{Content, TileType},
+        World,
+    },
 };
 
-use sense_and_find_by_Rustafariani::Lssf;
+use sense_and_find_by_Rustafariani::{Action, Lssf};
 use spyglass::spyglass::{Spyglass, SpyglassResult};
 use ui_lib::RunnableUi;
 use utils::is_content_rock;
@@ -17,9 +21,11 @@ use OhCrab_collection::collection::{self, CollectTool};
 
 pub mod utils;
 
+#[derive(Debug)]
 enum State {
     Ready,
     Discover,
+    Locate,
     Find,
     Collect,
     Build,
@@ -40,6 +46,7 @@ pub struct BuilderAi {
     row: usize,
     col: usize,
     rocks: VecDeque<(usize, usize)>,
+    actions: VecDeque<Action>,
 }
 
 impl BuilderAi {
@@ -52,14 +59,15 @@ impl BuilderAi {
             row: 0,
             col: 0,
             rocks: VecDeque::new(),
+            actions: VecDeque::new(),
         }
     }
 
     pub fn run(&mut self, world: &mut World) {
+        robot_view(self, world);
+
         self.row = self.get_coordinate().get_row();
         self.col = self.get_coordinate().get_col();
-
-        println!("{:?}", self.rocks);
 
         match self.state {
             State::Ready => {
@@ -67,6 +75,9 @@ impl BuilderAi {
             }
             State::Discover => {
                 self.do_discover(world);
+            }
+            State::Locate => {
+                self.do_locate(world);
             }
             State::Find => {
                 self.do_find(world);
@@ -91,84 +102,118 @@ impl BuilderAi {
         let mut spyglass = Spyglass::new(
             self.row,
             self.col,
-            7,
+            10,
             self.world_size,
             None,
             true,
             1.0,
-            |t| is_content_rock(&t.content),
+            |tile| is_content_rock(&tile.content),
         );
 
         let result = spyglass.new_discover(self, world);
 
         match result {
-            SpyglassResult::Complete => self.state = State::Find,
             SpyglassResult::Failed(error) => {
                 println!("{:?}", error);
             }
-            _ => {}
+            _ => {
+                self.state = State::Locate;
+            }
         }
     }
 
-    fn do_find(&mut self, world: &mut World) {
+    fn do_locate(&mut self, world: &World) {
         let map = robot_map(world).unwrap();
 
         let mut lssf = Lssf::new();
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        self.rocks.extend(lssf.get_content_vec(&Content::Rock(0)));
+        let vec = lssf.get_content_vec(&Content::Rock(0));
+        self.rocks = VecDeque::new();
 
-        if !self.rocks.is_empty() {
+        for (row, col) in vec {
+            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+                self.rocks.push_back((row, col));
+            }
+        }
+
+        if self.rocks.is_empty() {
+            self.state = State::Discover;
+        } else {
+            self.state = State::Find;
+        }
+    }
+
+    fn do_find(&mut self, world: &mut World) {
+        if self.actions.is_empty() {
+            let map = robot_map(world).unwrap();
+
+            let mut lssf = Lssf::new();
+            lssf.update_map(&map);
+            let _ = lssf.update_cost(self.row, self.col);
+
+            if let Some((row, col)) = self.rocks.pop_front() {
+                self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+
+                if self.actions.is_empty() {
+                    let _ = go(self, world, Direction::Left);
+                    self.state = State::Collect;
+                }
+            }
+        }
+
+        if self.actions.len() > 1 {
+            if let Some(action) = self.actions.pop_front() {
+                match action {
+                    Action::East => {
+                        let _ = go(self, world, Direction::Right);
+                    }
+                    Action::South => {
+                        let _ = go(self, world, Direction::Down);
+                    }
+                    Action::West => {
+                        let _ = go(self, world, Direction::Left);
+                    }
+                    Action::North => {
+                        let _ = go(self, world, Direction::Up);
+                    }
+                    Action::Teleport(col, row) => {
+                        let _ = teleport(self, world, (row, col));
+                    }
+                }
+            }
+        }
+
+        if self.actions.len() == 1 {
+            self.actions = VecDeque::new();
             self.state = State::Collect;
         }
     }
 
     fn do_collect(&mut self, world: &mut World) {
-        let map = robot_map(world).unwrap();
+        let result = CollectTool::collect_instantly_reachable(self, world, &Content::Rock(0));
 
-        let mut count = 0;
-
-        if let Some((row, col)) = self.rocks.pop_front() {
-            if let Some(tile) = map[row][col].as_ref() {
-                let content = &tile.content;
-
-                if let Ok(c) =
-                    CollectTool::collect_content(self, world, content, usize::MAX, usize::MAX)
-                {
-                    count += c;
-                }
-            }
+        if result.is_ok() {
+            self.state = State::Build;
         }
+    }
 
-        if count > 0 {
-            if self.rocks.is_empty() {
-                self.state = State::Build;
+    fn do_build(&mut self, world: &mut World) {
+        robot_view(self, world);
+        let result = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+
+        match result {
+            Ok(()) => {
+                self.state = State::Discover;
             }
-        } else {
-            if self.rocks.is_empty() {
+            Err(error) => {
                 self.state = State::Discover;
             }
         }
     }
 
-    fn do_build(&mut self, world: &mut World) {
-        let result = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 3);
-
-        match result {
-            Ok(()) => {
-                self.state = State::Terminate;
-            }
-            Err(error) => match error {
-                ToolError::NotEnoughMaterial(_) => {
-                    self.state = State::Discover;
-                }
-                _ => {}
-            },
-        }
-    }
-
-    fn do_terminate(&mut self, world: &World) {}
+    fn do_terminate(&mut self, _world: &World) {}
 }
 
 impl Runnable for BuilderAi {
