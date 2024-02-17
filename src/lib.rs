@@ -44,6 +44,7 @@ pub struct BuilderAi {
     state: State,
     row: usize,
     col: usize,
+    spyglass_distance: usize,
     rocks: VecDeque<(usize, usize)>,
     actions: VecDeque<Action>,
     goal_tracker: GoalTracker,
@@ -67,6 +68,7 @@ impl BuilderAi {
             state: State::Ready,
             row: 0,
             col: 0,
+            spyglass_distance: 10,
             rocks: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
@@ -115,15 +117,19 @@ impl BuilderAi {
         let mut spyglass = Spyglass::new(
             self.row,
             self.col,
-            10,
+            self.spyglass_distance,
             self.world_size,
             None,
             true,
             1.0,
-            |tile| (tile.content.to_default() == Content::Rock(0)) && (tile.tile_type != TileType::Street),
+            |tile| {
+                (tile.content.to_default() == Content::Rock(0))
+                    && (tile.tile_type != TileType::Street)
+            },
         );
 
         let result = spyglass.new_discover(self, world);
+        self.spyglass_distance += 1;
 
         match result {
             SpyglassResult::Failed(_) => {}
