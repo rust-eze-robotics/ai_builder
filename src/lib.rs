@@ -68,7 +68,7 @@ impl BuilderAi {
             state: State::Ready,
             row: 0,
             col: 0,
-            spyglass_distance: 10,
+            spyglass_distance: 5,
             rocks: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
@@ -325,10 +325,12 @@ impl BuilderAi {
         let _ = go(self, world, Direction::Left);
         let _ = go(self, world, Direction::Up);
         let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Left);
         let _ = go(self, world, Direction::Up);
         let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Left);
-        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Right);
         let _ = go(self, world, Direction::Down);
 
         self.state = State::Terminate;
