@@ -1,10 +1,11 @@
 use std::{collections::VecDeque, f32::consts::E};
 
+use bob_lib::tracker::{Goal, GoalTracker, GoalType};
 use pmp_street_picasso::{ToolError, ToolStreetPicasso};
 use robotics_lib::{
     energy::Energy,
     event::events::Event,
-    interface::{go, robot_map, robot_view, teleport, Direction},
+    interface::{destroy, go, robot_map, robot_view, teleport, Direction},
     runner::{backpack::BackPack, Robot, Runnable},
     world::{
         coordinates::Coordinate,
@@ -29,6 +30,7 @@ enum State {
     Find,
     Collect,
     Build,
+    Dance,
     Terminate,
 }
 
@@ -47,10 +49,20 @@ pub struct BuilderAi {
     col: usize,
     rocks: VecDeque<(usize, usize)>,
     actions: VecDeque<Action>,
+    goal_tracker: GoalTracker,
 }
 
 impl BuilderAi {
     pub fn new(ui: Box<dyn RunnableUi>, world_size: usize) -> Self {
+        let mut goal_tracker = GoalTracker::new();
+        goal_tracker.add_goal(Goal::new(
+            String::from("Rocks"),
+            String::default(),
+            GoalType::GetItems,
+            Some(Content::Rock(0)),
+            16,
+        ));
+
         Self {
             ui,
             world_size,
@@ -60,6 +72,7 @@ impl BuilderAi {
             col: 0,
             rocks: VecDeque::new(),
             actions: VecDeque::new(),
+            goal_tracker,
         }
     }
 
@@ -88,6 +101,9 @@ impl BuilderAi {
             State::Build => {
                 self.do_build(world);
             }
+            State::Dance => {
+                self.do_dance(world);
+            }
             State::Terminate => {
                 self.do_terminate(world);
             }
@@ -113,9 +129,7 @@ impl BuilderAi {
         let result = spyglass.new_discover(self, world);
 
         match result {
-            SpyglassResult::Failed(error) => {
-                println!("{:?}", error);
-            }
+            SpyglassResult::Failed(_) => {}
             _ => {
                 self.state = State::Locate;
             }
@@ -147,6 +161,11 @@ impl BuilderAi {
 
     fn do_find(&mut self, world: &mut World) {
         if self.actions.is_empty() {
+            if self.rocks.is_empty() {
+                self.state = State::Locate;
+                return;
+            }
+
             let map = robot_map(world).unwrap();
 
             let mut lssf = Lssf::new();
@@ -158,7 +177,9 @@ impl BuilderAi {
 
                 if self.actions.is_empty() {
                     let _ = go(self, world, Direction::Left);
+                    robot_view(self, world);
                     self.state = State::Collect;
+                    return;
                 }
             }
         }
@@ -168,17 +189,21 @@ impl BuilderAi {
                 match action {
                     Action::East => {
                         let _ = go(self, world, Direction::Right);
+                        robot_view(self, world);
                     }
                     Action::South => {
                         let _ = go(self, world, Direction::Down);
+                        robot_view(self, world);
                     }
                     Action::West => {
                         let _ = go(self, world, Direction::Left);
+                        robot_view(self, world);
                     }
                     Action::North => {
                         let _ = go(self, world, Direction::Up);
+                        robot_view(self, world);
                     }
-                    Action::Teleport(col, row) => {
+                    Action::Teleport(row, col) => {
                         let _ = teleport(self, world, (row, col));
                     }
                 }
@@ -194,26 +219,121 @@ impl BuilderAi {
     fn do_collect(&mut self, world: &mut World) {
         let result = CollectTool::collect_instantly_reachable(self, world, &Content::Rock(0));
 
-        if result.is_ok() {
+        if let Ok(count) = result {
+            self.goal_tracker
+                .update_manual(GoalType::GetItems, Some(Content::Rock(0)), count);
+        }
+
+        if self.goal_tracker.get_completed_number() > 0 {
             self.state = State::Build;
+        } else {
+            self.state = State::Find;
         }
     }
 
     fn do_build(&mut self, world: &mut World) {
         robot_view(self, world);
-        let result = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
 
-        match result {
-            Ok(()) => {
-                self.state = State::Discover;
-            }
-            Err(error) => {
-                self.state = State::Discover;
-            }
-        }
+        let _ = destroy(self, world, Direction::Left);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Left);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Up);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Right);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Right);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Down);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
+        let _ = go(self, world, Direction::Down);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Down);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
+        let _ = go(self, world, Direction::Down);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Left);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Left);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Left);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Up);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Up);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Up);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Right);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Right);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Right);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Down);
+
+        self.state = State::Dance;
     }
 
-    fn do_terminate(&mut self, _world: &World) {}
+    fn do_dance(&mut self, world: &mut World) {
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Down);
+
+        self.state = State::Terminate;
+    }
+
+    fn do_terminate(&mut self, _world: &World) {
+        self.handle_event(Event::Terminated);
+    }
 }
 
 impl Runnable for BuilderAi {
