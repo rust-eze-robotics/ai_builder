@@ -1,7 +1,7 @@
-use std::{collections::VecDeque, f32::consts::E};
+use std::collections::VecDeque;
 
 use bob_lib::tracker::{Goal, GoalTracker, GoalType};
-use pmp_street_picasso::{ToolError, ToolStreetPicasso};
+use pmp_street_picasso::ToolStreetPicasso;
 use robotics_lib::{
     energy::Energy,
     event::events::Event,
@@ -17,10 +17,7 @@ use robotics_lib::{
 use sense_and_find_by_Rustafariani::{Action, Lssf};
 use spyglass::spyglass::{Spyglass, SpyglassResult};
 use ui_lib::RunnableUi;
-use utils::is_content_rock;
-use OhCrab_collection::collection::{self, CollectTool};
-
-pub mod utils;
+use OhCrab_collection::collection::CollectTool;
 
 #[derive(Debug)]
 enum State {
@@ -123,7 +120,7 @@ impl BuilderAi {
             None,
             true,
             1.0,
-            |tile| is_content_rock(&tile.content),
+            |tile| tile.content.to_default() == Content::Rock(0),
         );
 
         let result = spyglass.new_discover(self, world);
