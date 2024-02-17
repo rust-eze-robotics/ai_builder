@@ -120,7 +120,7 @@ impl BuilderAi {
             None,
             true,
             1.0,
-            |tile| tile.content.to_default() == Content::Rock(0),
+            |tile| (tile.content.to_default() == Content::Rock(0)) && (tile.tile_type != TileType::Street),
         );
 
         let result = spyglass.new_discover(self, world);
