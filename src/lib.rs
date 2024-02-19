@@ -24,9 +24,6 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
     WorldGeneratorParameters {
         time_progression_minutes: 60,
         contents_radii: ContentsRadii {
-            rocks_in_plains: 3,
-            rocks_in_hill: 3,
-            rocks_in_mountain: 3,
             buildings: 3,
             ..Default::default()
         },
