@@ -144,15 +144,15 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let builds = lssf.get_content_vec(&Content::Rock(0));
+        let vec = lssf.get_content_vec(&Content::Rock(0));
 
-//        self.builds = VecDeque::new();
+        self.builds = VecDeque::new();
 
- //       for (row, col) in vec {
- //           if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
- //               self.builds.push_back((row, col));
- //           }
- //       }
+        for (row, col) in vec {
+            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+                self.builds.push_back((row, col));
+            }
+        }
 
         if self.builds.is_empty() {
             println!("empty");
