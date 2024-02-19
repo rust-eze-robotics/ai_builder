@@ -27,7 +27,7 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
             rocks_in_plains: 3,
             rocks_in_hill: 3,
             rocks_in_mountain: 3,
-            //buildings: 100,
+            buildings: 1,
             ..Default::default()
         },
         ..Default::default()
@@ -143,22 +143,22 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let vec = lssf.get_content_vec(&Content::Rock(0));
+        let builds = lssf.get_content_vec(&Content::Building);
        
-        if vec.is_empty(){
+        if builds.is_empty(){
             print!("empty");
         }
         else {
             print!("not empty");
         }
 
-        self.builds = VecDeque::new();
+//        self.builds = VecDeque::new();
 
-        for (row, col) in vec {
-            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
-                self.builds.push_back((row, col));
-            }
-        }
+ //       for (row, col) in vec {
+ //           if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+ //               self.builds.push_back((row, col));
+ //           }
+ //       }
 
         if self.builds.is_empty() {
             self.state = State::Discover;
