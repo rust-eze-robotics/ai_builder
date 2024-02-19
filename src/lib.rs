@@ -370,7 +370,7 @@ impl BuilderAi {
             self.goal_tracker
                 .update_manual(GoalType::GetItems, Some(Content::Rock(0)), count);
         }
-
+    
         if self.goal_tracker.get_completed_number() > 0 {
             self.state = State::DiscoverTree;
         } else {
@@ -381,14 +381,6 @@ impl BuilderAi {
     fn do_build(&mut self, world: &mut World) {
         
         robot_view(self, world);
- //       let _ = destroy(self, world, Direction::Left);
- //       robot_view(self, world);
- //       let _ = destroy(self, world, Direction::Up);
- //       robot_view(self, world);
- //       let _ = destroy(self, world, Direction::Right);
- //       robot_view(self, world);
- //       let _ = destroy(self, world, Direction::Down);
- //       robot_view(self, world);
 
         let _ = destroy(self, world, Direction::Left);
         robot_view(self, world);
@@ -433,6 +425,7 @@ impl BuilderAi {
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
         robot_view(self, world);
 
+        self.goal_tracker.clean();
         self.goal_tracker.add_goal(Goal::new(
             String::from("Rocks"),
             String::default(),
