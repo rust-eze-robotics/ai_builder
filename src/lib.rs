@@ -27,7 +27,7 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
             rocks_in_plains: 3,
             rocks_in_hill: 3,
             rocks_in_mountain: 3,
-            buildings: 100,
+            //buildings: 100,
             ..Default::default()
         },
         ..Default::default()
@@ -142,7 +142,7 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let vec = lssf.get_content_vec(&Content::Building);
+        let vec = lssf.get_content_vec(&Content::Rock(0));
        
         if vec.is_empty(){
             print!("empty");
@@ -199,7 +199,7 @@ impl BuilderAi {
             true,
             1.0,
             |tile| {
-                (tile.content.to_default() == Content::Building)
+                (tile.content.to_default() == Content::Rock(0))
             },
         );
 
