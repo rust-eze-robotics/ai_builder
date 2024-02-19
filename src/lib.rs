@@ -125,7 +125,6 @@ impl BuilderAi {
 
     fn do_ready(&mut self) {
         self.state = State::Discover;
-        println!(self.goal_tracker.);
         
     }
 
