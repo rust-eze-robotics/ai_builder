@@ -103,7 +103,7 @@ impl BuilderAi {
                 self.do_ready();
             }
             State::Discover => {
-                //self.do_discover(world);
+                self.do_discover(world);
             }
             State::Locate => {
                 self.do_locate_building(world);
