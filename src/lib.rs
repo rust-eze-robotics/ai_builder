@@ -230,7 +230,7 @@ impl BuilderAi {
 
         if self.actions.len() == 1 {
             self.actions = VecDeque::new();
-            self.state = State::NextBuild;
+            self.state = State::Collect;
         }
     }
 
