@@ -42,6 +42,7 @@ enum State {
     Collect,
     Build,
     Dance,
+    Goto,
     Terminate,
 }
 
@@ -100,10 +101,10 @@ impl BuilderAi {
                 self.do_ready();
             }
             State::Discover => {
-                self.do_discover(world);
+                //self.do_discover(world);
             }
             State::Locate => {
-                self.do_locate(world);
+                self.do_locate_building(world);
             }
             State::Find => {
                 self.do_find(world);
@@ -117,6 +118,9 @@ impl BuilderAi {
             State::Dance => {
                 self.do_dance(world);
             }
+            State::Goto => {
+                self.do_goto(world);
+            }
             State::Terminate => {
                 self.do_terminate(world);
             }
@@ -128,6 +132,24 @@ impl BuilderAi {
         
     }
 
+    fn do_locate_building(&mut self, world: &World) {
+        let map = robot_map(world).unwrap();
+
+        let mut lssf = Lssf::new();
+        lssf.update_map(&map);
+        let _ = lssf.update_cost(self.row, self.col);
+
+        let vec = lssf.get_content_vec(&Content::Building);
+       
+        self.builds = VecDeque::new();
+
+        if self.builds.is_empty() {
+            self.state = State::Discover;
+        } else {
+            self.state = State::Goto;
+        }
+    }
+    
     fn do_discover(&mut self, world: &mut World) {
         let mut spyglass = Spyglass::new(
             self.row,
@@ -177,6 +199,65 @@ impl BuilderAi {
             self.state = State::Find;
         }
     }
+
+    fn do_goto(&mut self, world: &mut World) {
+        if self.actions.is_empty() {
+            if self.builds.is_empty() {
+                self.state = State::Locate;
+                return;
+            }
+        }
+
+//   let map = robot_map(world).unwrap();
+//   let mut lssf = Lssf::new();
+//   lssf.update_map(&map);
+//   let _ = lssf.update_cost(self.row, self.col);
+//
+//   if let Some((row, col)) = self.rocks.pop_front() {
+//       self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+//
+//       if self.actions.is_empty() {
+//           let _ = go(self, world, Direction::Left);
+//           robot_view(self, world);
+//           self.state = State::Collect;
+//           return;
+//       }
+//   }
+//
+
+        if self.actions.len() > 1 {
+            if let Some(action) = self.actions.pop_front() {
+                match action {
+                    Action::East => {
+                        let _ = go(self, world, Direction::Right);
+                        robot_view(self, world);
+                    }
+                    Action::South => {
+                        let _ = go(self, world, Direction::Down);
+                        robot_view(self, world);
+                    }
+                    Action::West => {
+                        let _ = go(self, world, Direction::Left);
+                        robot_view(self, world);
+                    }
+                    Action::North => {
+                        let _ = go(self, world, Direction::Up);
+                        robot_view(self, world);
+                    }
+                    Action::Teleport(row, col) => {
+                        let _ = teleport(self, world, (row, col));
+                    }
+                }
+            }
+        }
+
+        if self.actions.len() == 1 {
+            self.actions = VecDeque::new();
+            self.state = State::Collect;
+        }
+    }
+
+
 
     fn do_find(&mut self, world: &mut World) {
         if self.actions.is_empty() {
