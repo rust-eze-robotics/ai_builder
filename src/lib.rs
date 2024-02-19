@@ -72,7 +72,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            5,
+            16,
         ));
 
         Self {
@@ -144,7 +144,7 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let vec = lssf.get_content_vec(&Content::Rock(0));
+        let vec = lssf.get_content_vec(&Content::Tree(0));
 
         self.builds = VecDeque::new();
 
@@ -199,7 +199,7 @@ impl BuilderAi {
             true,
             1.0,
             |tile| {
-                (tile.content.to_default() == Content::Rock(0))
+                (tile.content.to_default() == Content::Tree(0))
             },
         );
 
