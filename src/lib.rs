@@ -99,8 +99,6 @@ impl BuilderAi {
         self.row = self.get_coordinate().get_row();
         self.col = self.get_coordinate().get_col();
 
-        println!("{}",self.state);
-        
         match self.state {
             State::Ready => {
                 self.do_ready();
@@ -124,6 +122,7 @@ impl BuilderAi {
                 self.do_dance(world);
             }
             State::Goto => {
+                print!("goto");
                 self.do_goto(world);
             }
             State::Terminate => {
