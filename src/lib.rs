@@ -141,11 +141,16 @@ impl BuilderAi {
 
         let vec = lssf.get_content_vec(&Content::Building);
        
+        print("{}",vec);
         self.builds = VecDeque::new();
 
         if self.builds.is_empty() {
             self.state = State::Discover;
         } else {
+            
+            if let Some((row, col)) = self.builds.pop_front() {
+             self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+            }
             self.state = State::Goto;
         }
     }
