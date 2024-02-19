@@ -179,15 +179,15 @@ impl BuilderAi {
 
         let vec = lssf.get_content_vec(&Content::Tree(0));
        
-        self.rocks = VecDeque::new();
+        self.tree = VecDeque::new();
 
         for (row, col) in vec {
             if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
-                self.rocks.push_back((row, col));
+                self.tree.push_back((row, col));
             }
         }
 
-        if self.rocks.is_empty() {
+        if self.tree.is_empty() {
             self.state = State::DiscoverTree;
         } else {
             self.state = State::FindTree;
