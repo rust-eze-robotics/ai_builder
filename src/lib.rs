@@ -252,6 +252,15 @@ impl BuilderAi {
     }
 
     fn do_ready(&mut self) {
+        
+        self.goal_tracker.add_goal(Goal::new(
+            String::from("Rocks"),
+            String::default(),
+            GoalType::GetItems,
+            Some(Content::Rock(0)),
+            10,
+        ));
+
         self.state = State::Discover;
         
     }
@@ -424,15 +433,6 @@ impl BuilderAi {
         robot_view(self, world);
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
         robot_view(self, world);
-
-        self.goal_tracker.clear();
-        self.goal_tracker.add_goal(Goal::new(
-            String::from("Rocks"),
-            String::default(),
-            GoalType::GetItems,
-            Some(Content::Rock(0)),
-            10,
-        ));
 
         self.state = State::Dance;
     }
