@@ -425,7 +425,7 @@ impl BuilderAi {
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
         robot_view(self, world);
 
-        self.goal_tracker.clean();
+        self.goal_tracker.clear();
         self.goal_tracker.add_goal(Goal::new(
             String::from("Rocks"),
             String::default(),
