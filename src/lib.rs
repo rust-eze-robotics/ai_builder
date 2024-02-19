@@ -99,6 +99,8 @@ impl BuilderAi {
         self.row = self.get_coordinate().get_row();
         self.col = self.get_coordinate().get_col();
 
+        println!("{}",self.state);
+        
         match self.state {
             State::Ready => {
                 self.do_ready();
