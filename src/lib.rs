@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 
 use bob_lib::tracker::{Goal, GoalTracker, GoalType};
+use midgard::params::{ContentsRadii, WorldGeneratorParameters};
 use pmp_street_picasso::ToolStreetPicasso;
 use robotics_lib::{
     energy::Energy,
@@ -18,6 +19,19 @@ use sense_and_find_by_Rustafariani::{Action, Lssf};
 use spyglass::spyglass::{Spyglass, SpyglassResult};
 use ui_lib::RunnableUi;
 use OhCrab_collection::collection::CollectTool;
+
+pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
+    WorldGeneratorParameters {
+        time_progression_minutes: 60,
+        contents_radii: ContentsRadii {
+            rocks_in_plains: 3,
+            rocks_in_hill: 3,
+            rocks_in_mountain: 3,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
 
 #[derive(Debug)]
 enum State {
