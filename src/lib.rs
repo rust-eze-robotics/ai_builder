@@ -40,7 +40,6 @@ enum State {
     Collect,
     Build,
     Dance,
-    Goto,
     Terminate,
 }
 
