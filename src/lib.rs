@@ -85,6 +85,7 @@ impl BuilderAi {
             col: 0,
             spyglass_distance: 5,
             rocks: VecDeque::new(),
+            builds: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
         }
@@ -141,7 +142,7 @@ impl BuilderAi {
 
         let vec = lssf.get_content_vec(&Content::Building);
        
-        print("{}",vec);
+        print!("{}",vec);
         self.builds = VecDeque::new();
 
         if self.builds.is_empty() {
