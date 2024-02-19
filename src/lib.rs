@@ -419,7 +419,7 @@ impl BuilderAi {
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
         let _ = go(self, world, Direction::Down);
         robot_view(self, world);
-        self.goal_tracker.update_manual(GoalType::GetItems, Some(Content::Rock(0)), 9);
+        self.goal_tracker.update_manual(GoalType::GetItems, Some(Content::Rock(0)), 0);
         self.state = State::Dance;
     }
 
