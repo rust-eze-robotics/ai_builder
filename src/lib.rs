@@ -143,7 +143,12 @@ impl BuilderAi {
 
         let vec = lssf.get_content_vec(&Content::Building);
        
-        print!("{}",vec);
+        if vec.is_empty(){
+            print!("empty");
+        }
+        else {
+            print!("not empty");
+        }
         self.builds = VecDeque::new();
 
         if self.builds.is_empty() {
