@@ -151,15 +151,18 @@ impl BuilderAi {
         else {
             print!("not empty");
         }
+
         self.builds = VecDeque::new();
+
+        for (row, col) in vec {
+            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+                self.builds.push_back((row, col));
+            }
+        }
 
         if self.builds.is_empty() {
             self.state = State::Discover;
         } else {
-            
-            if let Some((row, col)) = self.builds.pop_front() {
-             self.actions.extend(lssf.get_action_vec(row, col).unwrap());
-            }
             self.state = State::Goto;
         }
     }
