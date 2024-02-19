@@ -144,7 +144,7 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let builds = lssf.get_content_vec(&Content::Bush(0));
+        let builds = lssf.get_content_vec(&Content::Rock(0));
 
 //        self.builds = VecDeque::new();
 
