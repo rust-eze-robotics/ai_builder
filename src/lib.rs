@@ -143,7 +143,7 @@ impl BuilderAi {
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let builds = lssf.get_content_vec(&Content::Building);
+        let builds = lssf.get_content_vec(&Content::Rock(0));
        
         if builds.is_empty(){
             print!("empty");
@@ -218,6 +218,8 @@ impl BuilderAi {
         }
     }
 
+
+    
     fn do_locate(&mut self, world: &World) {
         let map = robot_map(world).unwrap();
 
@@ -250,22 +252,22 @@ impl BuilderAi {
             }
         }
 
-//   let map = robot_map(world).unwrap();
-//   let mut lssf = Lssf::new();
-//   lssf.update_map(&map);
-//   let _ = lssf.update_cost(self.row, self.col);
-//
-//   if let Some((row, col)) = self.rocks.pop_front() {
-//       self.actions.extend(lssf.get_action_vec(row, col).unwrap());
-//
-//       if self.actions.is_empty() {
-//           let _ = go(self, world, Direction::Left);
-//           robot_view(self, world);
-//           self.state = State::Collect;
-//           return;
-//       }
-//   }
-//
+   let map = robot_map(world).unwrap();
+   let mut lssf = Lssf::new();
+   lssf.update_map(&map);
+   let _ = lssf.update_cost(self.row, self.col);
+
+   if let Some((row, col)) = self.builds.pop_front() {
+       self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+
+       if self.actions.is_empty() {
+           let _ = go(self, world, Direction::Left);
+           robot_view(self, world);
+           self.state = State::Collect;
+           return;
+       }
+   }
+
 
         if self.actions.len() > 1 {
             if let Some(action) = self.actions.pop_front() {
