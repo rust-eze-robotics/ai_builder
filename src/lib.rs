@@ -27,6 +27,7 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
             rocks_in_plains: 3,
             rocks_in_hill: 3,
             rocks_in_mountain: 3,
+            buildings: 5,
             ..Default::default()
         },
         ..Default::default()
