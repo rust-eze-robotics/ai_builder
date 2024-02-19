@@ -116,9 +116,11 @@ impl BuilderAi {
                 self.do_collect(world);
             }
             State::Build => {
+                println!("build");
                 self.do_build(world);
             }
             State::Dance => {
+                println!("dance");
                 self.do_dance(world);
             }
 
