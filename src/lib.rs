@@ -74,7 +74,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            9,
+            16,
         ));
 
         Self {
@@ -469,14 +469,13 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            9,
+            16,
         ));
 
         self.state = State::Dance;
     }
 
     fn do_dance(&mut self, world: &mut World) {
-        let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Left);
         let _ = go(self, world, Direction::Left);
