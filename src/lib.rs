@@ -40,6 +40,9 @@ enum State {
     Collect,
     Build,
     Dance,
+    DiscoverTree,
+    LocateTree,
+    FindTree,
     Terminate,
 }
 
@@ -83,7 +86,7 @@ impl BuilderAi {
             col: 0,
             spyglass_distance: 5,
             rocks: VecDeque::new(),
-            builds: VecDeque::new(),
+            tree: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
         }
@@ -124,14 +127,129 @@ impl BuilderAi {
                 self.do_dance(world);
             }
 
+            State::DiscoverTree => {
+                println!("discoverT");
+                self.do_discover_tree(world);
+            }
+            State::LocateTree => {
+                println!("locateT");
+                self.do_locate_tree(world);
+            }
+            State::FindTree => {
+                println!("findT");
+                self.do_find_tree(world);
+            }          
             State::Terminate => {
                 self.do_terminate(world);
             }
         }
     }
 
+    fn do_discover_tree(&mut self, world: &mut World) {
+        let mut spyglass = Spyglass::new(
+            self.row,
+            self.col,
+            self.spyglass_distance,
+            self.world_size,
+            None,
+            true,
+            1.0,
+            |tile| {
+                (tile.content.to_default() == Content::Tree(0))
+            },
+        );
 
- 
+        let result = spyglass.new_discover(self, world);
+        self.spyglass_distance += 1;
+
+        match result {
+            SpyglassResult::Failed(_) => {}
+            _ => {
+                self.state = State::LocateTree;
+            }
+        }
+    }
+
+    fn do_locate_tree(&mut self, world: &World) {
+        let map = robot_map(world).unwrap();
+
+        let mut lssf = Lssf::new();
+        lssf.update_map(&map);
+        let _ = lssf.update_cost(self.row, self.col);
+
+        let vec = lssf.get_content_vec(&Content::Tree(0));
+       
+        self.rocks = VecDeque::new();
+
+        for (row, col) in vec {
+            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+                self.rocks.push_back((row, col));
+            }
+        }
+
+        if self.rocks.is_empty() {
+            self.state = State::DiscoverTree;
+        } else {
+            self.state = State::FindTree;
+        }
+    }
+
+    fn do_find_tree(&mut self, world: &mut World) {
+        if self.actions.is_empty() {
+            if self.tree.is_empty() {
+                self.state = State::LocateTree;
+                return;
+            }
+
+            let map = robot_map(world).unwrap();
+
+            let mut lssf = Lssf::new();
+            lssf.update_map(&map);
+            let _ = lssf.update_cost(self.row, self.col);
+
+            if let Some((row, col)) = self.tree.pop_front() {
+                self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+
+                if self.actions.is_empty() {
+                    let _ = go(self, world, Direction::Left);
+                    robot_view(self, world);
+                    self.state = State::LocateTree;
+                    return;
+                }
+            }
+        }
+
+        if self.actions.len() > 1 {
+            if let Some(action) = self.actions.pop_front() {
+                match action {
+                    Action::East => {
+                        let _ = go(self, world, Direction::Right);
+                        robot_view(self, world);
+                    }
+                    Action::South => {
+                        let _ = go(self, world, Direction::Down);
+                        robot_view(self, world);
+                    }
+                    Action::West => {
+                        let _ = go(self, world, Direction::Left);
+                        robot_view(self, world);
+                    }
+                    Action::North => {
+                        let _ = go(self, world, Direction::Up);
+                        robot_view(self, world);
+                    }
+                    Action::Teleport(row, col) => {
+                        let _ = teleport(self, world, (row, col));
+                    }
+                }
+            }
+        }
+
+        if self.actions.len() == 1 {
+            self.actions = VecDeque::new();
+            self.state = State::Build;
+        }
+    }
 
     fn do_ready(&mut self) {
         self.state = State::Discover;
@@ -254,7 +372,7 @@ impl BuilderAi {
         }
 
         if self.goal_tracker.get_completed_number() > 0 {
-            self.state = State::Build;
+            self.state = State::DiscoverTree;
         } else {
             self.state = State::Find;
         }
@@ -301,7 +419,7 @@ impl BuilderAi {
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
         let _ = go(self, world, Direction::Down);
         robot_view(self, world);
-        
+        self.goal_tracker.update_manual(GoalType::GetItems, Some(Content::Rock(0)), 9);
         self.state = State::Dance;
     }
 
