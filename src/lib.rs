@@ -27,7 +27,7 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
             rocks_in_plains: 3,
             rocks_in_hill: 3,
             rocks_in_mountain: 3,
-            buildings: 0,
+            buildings: 3,
             ..Default::default()
         },
         ..Default::default()
@@ -144,13 +144,6 @@ impl BuilderAi {
         let _ = lssf.update_cost(self.row, self.col);
 
         let builds = lssf.get_content_vec(&Content::Rock(0));
-       
-        if builds.is_empty(){
-            print!("empty");
-        }
-        else {
-            print!("not empty");
-        }
 
 //        self.builds = VecDeque::new();
 
@@ -161,8 +154,10 @@ impl BuilderAi {
  //       }
 
         if self.builds.is_empty() {
+            println!("empty");
             self.state = State::Discover;
         } else {
+            println!("not empty");
             self.state = State::Goto;
         }
     }
@@ -219,7 +214,7 @@ impl BuilderAi {
     }
 
 
-    
+
     fn do_locate(&mut self, world: &World) {
         let map = robot_map(world).unwrap();
 
