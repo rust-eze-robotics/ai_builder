@@ -72,7 +72,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            16,
+            5,
         ));
 
         Self {
@@ -125,6 +125,8 @@ impl BuilderAi {
 
     fn do_ready(&mut self) {
         self.state = State::Discover;
+        println!(self.goal_tracker.);
+        
     }
 
     fn do_discover(&mut self, world: &mut World) {
@@ -161,6 +163,7 @@ impl BuilderAi {
         let _ = lssf.update_cost(self.row, self.col);
 
         let vec = lssf.get_content_vec(&Content::Rock(0));
+       
         self.rocks = VecDeque::new();
 
         for (row, col) in vec {
