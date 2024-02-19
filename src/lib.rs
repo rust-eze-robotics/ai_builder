@@ -432,17 +432,11 @@ impl BuilderAi {
             Some(Content::Rock(0)),
             9,
         ));
-        
+
         self.state = State::Dance;
     }
 
     fn do_dance(&mut self, world: &mut World) {
-        let _ = go(self, world, Direction::Left);
-        let _ = go(self, world, Direction::Left);
-        let _ = go(self, world, Direction::Up);
-        let _ = go(self, world, Direction::Up);
-        let _ = go(self, world, Direction::Right);
-        let _ = go(self, world, Direction::Right);
         let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Left);
@@ -453,6 +447,12 @@ impl BuilderAi {
         let _ = go(self, world, Direction::Right);
         let _ = go(self, world, Direction::Down);
         let _ = go(self, world, Direction::Down);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Left);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Up);
+        let _ = go(self, world, Direction::Right);
+        let _ = go(self, world, Direction::Right);
 
         self.state = State::Ready;
     }
