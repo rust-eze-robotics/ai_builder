@@ -61,6 +61,7 @@ pub struct BuilderAi {
     col: usize,
     spyglass_distance: usize,
     rocks: VecDeque<(usize, usize)>,
+    builds: VecDeque<(usize, usize)>,
     actions: VecDeque<Action>,
     goal_tracker: GoalTracker,
 }
