@@ -424,14 +424,15 @@ impl BuilderAi {
         let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
         let _ = go(self, world, Direction::Right);
         robot_view(self, world);
-        
-        goal_tracker.add_goal(Goal::new(
+
+        self.goal_tracker.add_goal(Goal::new(
             String::from("Rocks"),
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
             9,
         ));
+        
         self.state = State::Dance;
     }
 
