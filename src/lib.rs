@@ -98,15 +98,19 @@ impl BuilderAi {
 
         match self.state {
             State::Ready => {
+                println!("ready");
                 self.do_ready();
             }
             State::Discover => {
+                println!("discover b");
                 self.do_discover_buildings(world);
             }
             State::Locate => {
+                println!("locate b");
                 self.do_locate_building(world);
             }
             State::Find => {
+                println!("find");
                 self.do_find(world);
             }
             State::Collect => {
