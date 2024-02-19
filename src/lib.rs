@@ -27,7 +27,7 @@ pub fn get_world_generator_parameters() -> WorldGeneratorParameters {
             rocks_in_plains: 3,
             rocks_in_hill: 3,
             rocks_in_mountain: 3,
-            buildings: 5,
+            buildings: 10,
             ..Default::default()
         },
         ..Default::default()
@@ -104,7 +104,7 @@ impl BuilderAi {
                 self.do_ready();
             }
             State::Discover => {
-                self.do_discover(world);
+                self.do_discover_buildings(world);
             }
             State::Locate => {
                 self.do_locate_building(world);
@@ -175,6 +175,31 @@ impl BuilderAi {
             |tile| {
                 (tile.content.to_default() == Content::Rock(0))
                     && (tile.tile_type != TileType::Street)
+            },
+        );
+
+        let result = spyglass.new_discover(self, world);
+        self.spyglass_distance += 1;
+
+        match result {
+            SpyglassResult::Failed(_) => {}
+            _ => {
+                self.state = State::Locate;
+            }
+        }
+    }
+
+    fn do_discover_buildings(&mut self, world: &mut World) {
+        let mut spyglass = Spyglass::new(
+            self.row,
+            self.col,
+            self.spyglass_distance,
+            self.world_size,
+            None,
+            true,
+            1.0,
+            |tile| {
+                (tile.content.to_default() == Content::Building)
             },
         );
 
