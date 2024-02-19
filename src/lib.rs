@@ -199,7 +199,7 @@ impl BuilderAi {
             true,
             1.0,
             |tile| {
-                (tile.content.to_default() == Content::Bush(0))
+                (tile.content.to_default() == Content::Tree(0))
             },
         );
 
