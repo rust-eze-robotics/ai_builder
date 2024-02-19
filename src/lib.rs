@@ -74,7 +74,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            10,
+            9,
         ));
 
         Self {
@@ -433,7 +433,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            10,
+            9,
         ));
 
         self.state = State::Dance;
