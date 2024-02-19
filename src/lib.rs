@@ -390,41 +390,41 @@ impl BuilderAi {
         let _ = destroy(self, world, Direction::Down);
         robot_view(self, world);
 
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
-        let _ = go(self, world, Direction::Left);
-        robot_view(self, world);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
-        robot_view(self, world);
-        let _ = destroy(self, world, Direction::Down);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
-        let _ = go(self, world, Direction::Down);
-        robot_view(self, world);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
-        let _ = go(self, world, Direction::Left);
-        robot_view(self, world);
-        let _ = destroy(self, world, Direction::Left);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
-        let _ = go(self, world, Direction::Left);
-        robot_view(self, world);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
-        let _ = go(self, world, Direction::Up);
-        robot_view(self, world);
-        let _ = destroy(self, world, Direction::Up);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
-        let _ = go(self, world, Direction::Up);
-        robot_view(self, world);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
-        let _ = go(self, world, Direction::Right);
-        robot_view(self, world);
-        let _ = destroy(self, world, Direction::Right);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
-        let _ = go(self, world, Direction::Right);
-        robot_view(self, world);
-        let _ = destroy(self, world, Direction::Right);
-        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
-        let _ = go(self, world, Direction::Right);
-        robot_view(self, world);
-
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+//        let _ = go(self, world, Direction::Left);
+//        robot_view(self, world);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+//        robot_view(self, world);
+//        let _ = destroy(self, world, Direction::Down);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Down, 1);
+//        let _ = go(self, world, Direction::Down);
+//        robot_view(self, world);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+//        let _ = go(self, world, Direction::Left);
+//        robot_view(self, world);
+//        let _ = destroy(self, world, Direction::Left);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
+//        let _ = go(self, world, Direction::Left);
+//        robot_view(self, world);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+//        let _ = go(self, world, Direction::Up);
+//        robot_view(self, world);
+//        let _ = destroy(self, world, Direction::Up);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+//        let _ = go(self, world, Direction::Up);
+//        robot_view(self, world);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+//        let _ = go(self, world, Direction::Right);
+//        robot_view(self, world);
+//        let _ = destroy(self, world, Direction::Right);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+//        let _ = go(self, world, Direction::Right);
+//        robot_view(self, world);
+//        let _ = destroy(self, world, Direction::Right);
+//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
+//        let _ = go(self, world, Direction::Right);
+//        robot_view(self, world);
+//
         self.goal_tracker.add_goal(Goal::new(
             String::from("Rocks"),
             String::default(),
