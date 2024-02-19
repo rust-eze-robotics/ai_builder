@@ -456,7 +456,7 @@ impl BuilderAi {
         let _ = go(self, world, Direction::Right);
         let _ = go(self, world, Direction::Right);
 
-        self.state = State::Ready;
+        self.state = State::Terminate;
     }
 
     fn do_terminate(&mut self, _world: &World) {
