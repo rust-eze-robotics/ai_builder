@@ -72,7 +72,7 @@ impl BuilderAi {
             String::default(),
             GoalType::GetItems,
             Some(Content::Rock(0)),
-            16,
+            9,
         ));
 
         Self {
@@ -87,6 +87,8 @@ impl BuilderAi {
             builds: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
+            b_row: 0,
+            b_col: 0
         }
     }
 
@@ -103,11 +105,11 @@ impl BuilderAi {
             }
             State::Discover => {
                 println!("discover b");
-                self.do_discover_buildings(world);
+                self.do_discover(world);
             }
             State::Locate => {
                 println!("locate b");
-                self.do_locate_building(world);
+                self.do_locate(world);
             }
             State::Find => {
                 println!("find");
@@ -122,69 +124,9 @@ impl BuilderAi {
             State::Dance => {
                 self.do_dance(world);
             }
-            State::Goto => {
-                print!("goto");
-                self.do_goto(world);
-            }
+
             State::Terminate => {
                 self.do_terminate(world);
-            }
-        }
-    }
-
-    fn do_ready(&mut self) {
-        self.state = State::Discover;
-        
-    }
-
-    fn do_locate_building(&mut self, world: &World) {
-        let map = robot_map(world).unwrap();
-
-        let mut lssf = Lssf::new();
-        lssf.update_map(&map);
-        let _ = lssf.update_cost(self.row, self.col);
-
-        let vec = lssf.get_content_vec(&Content::Tree(0));
-
-        self.builds = VecDeque::new();
-
-        for (row, col) in vec {
-            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
-                self.builds.push_back((row, col));
-            }
-        }
-
-        if self.builds.is_empty() {
-            println!("empty");
-            self.state = State::Discover;
-        } else {
-            println!("not empty");
-            self.state = State::Goto;
-        }
-    }
-    
-    fn do_discover(&mut self, world: &mut World) {
-        let mut spyglass = Spyglass::new(
-            self.row,
-            self.col,
-            self.spyglass_distance,
-            self.world_size,
-            None,
-            true,
-            1.0,
-            |tile| {
-                (tile.content.to_default() == Content::Rock(0))
-                    && (tile.tile_type != TileType::Street)
-            },
-        );
-
-        let result = spyglass.new_discover(self, world);
-        self.spyglass_distance += 1;
-
-        match result {
-            SpyglassResult::Failed(_) => {}
-            _ => {
-                self.state = State::Locate;
             }
         }
     }
@@ -214,32 +156,30 @@ impl BuilderAi {
         }
     }
 
-
-
-    fn do_locate(&mut self, world: &World) {
+    fn do_locate_building(&mut self, world: &World) {
         let map = robot_map(world).unwrap();
 
         let mut lssf = Lssf::new();
         lssf.update_map(&map);
         let _ = lssf.update_cost(self.row, self.col);
 
-        let vec = lssf.get_content_vec(&Content::Rock(0));
-       
-        self.rocks = VecDeque::new();
+        let vec = lssf.get_content_vec(&Content::Tree(0));
+
+        self.builds = VecDeque::new();
 
         for (row, col) in vec {
-            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
-                self.rocks.push_back((row, col));
-            }
+            self.builds.push_back((row, col));
         }
 
-        if self.rocks.is_empty() {
+        if self.builds.is_empty() {
+            println!("empty");
             self.state = State::Discover;
         } else {
-            self.state = State::Find;
+            println!("not empty");
+            self.state = State::Goto;
         }
     }
-
+    
     fn do_goto(&mut self, world: &mut World) {
         if self.actions.is_empty() {
             if self.builds.is_empty() {
@@ -248,22 +188,21 @@ impl BuilderAi {
             }
         }
 
-   let map = robot_map(world).unwrap();
-   let mut lssf = Lssf::new();
-   lssf.update_map(&map);
-   let _ = lssf.update_cost(self.row, self.col);
+        let map = robot_map(world).unwrap();
+        let mut lssf = Lssf::new();
+        lssf.update_map(&map);
+        let _ = lssf.update_cost(self.row, self.col);
 
-   if let Some((row, col)) = self.builds.pop_front() {
-       self.actions.extend(lssf.get_action_vec(row, col).unwrap());
+        if let Some((row, col)) = self.builds.pop_front() {
+            self.actions.extend(lssf.get_action_vec(row, col).unwrap());
 
-       if self.actions.is_empty() {
-           let _ = go(self, world, Direction::Left);
-           robot_view(self, world);
-           self.state = State::Collect;
-           return;
-       }
-   }
-
+            if self.actions.is_empty() {
+                let _ = go(self, world, Direction::Left);
+                robot_view(self, world);
+                self.state = State::Collect;
+                return;
+            }
+        }
 
         if self.actions.len() > 1 {
             if let Some(action) = self.actions.pop_front() {
@@ -293,11 +232,65 @@ impl BuilderAi {
 
         if self.actions.len() == 1 {
             self.actions = VecDeque::new();
-            self.state = State::Collect;
+            self.state = State::NextBuild;
         }
     }
 
 
+    fn do_ready(&mut self) {
+        self.state = State::Discover;
+        
+    }
+
+    fn do_discover(&mut self, world: &mut World) {
+        let mut spyglass = Spyglass::new(
+            self.row,
+            self.col,
+            self.spyglass_distance,
+            self.world_size,
+            None,
+            true,
+            1.0,
+            |tile| {
+                (tile.content.to_default() == Content::Rock(0))
+                    && (tile.tile_type != TileType::Street)
+            },
+        );
+
+        let result = spyglass.new_discover(self, world);
+        self.spyglass_distance += 1;
+
+        match result {
+            SpyglassResult::Failed(_) => {}
+            _ => {
+                self.state = State::Locate;
+            }
+        }
+    }
+
+    fn do_locate(&mut self, world: &World) {
+        let map = robot_map(world).unwrap();
+
+        let mut lssf = Lssf::new();
+        lssf.update_map(&map);
+        let _ = lssf.update_cost(self.row, self.col);
+
+        let vec = lssf.get_content_vec(&Content::Rock(0));
+       
+        self.rocks = VecDeque::new();
+
+        for (row, col) in vec {
+            if map[row][col].as_ref().unwrap().tile_type != TileType::Street {
+                self.rocks.push_back((row, col));
+            }
+        }
+
+        if self.rocks.is_empty() {
+            self.state = State::Discover;
+        } else {
+            self.state = State::Find;
+        }
+    }
 
     fn do_find(&mut self, world: &mut World) {
         if self.actions.is_empty() {
