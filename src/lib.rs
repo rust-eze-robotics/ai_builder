@@ -87,8 +87,6 @@ impl BuilderAi {
             builds: VecDeque::new(),
             actions: VecDeque::new(),
             goal_tracker,
-            b_row: 0,
-            b_col: 0
         }
     }
 
