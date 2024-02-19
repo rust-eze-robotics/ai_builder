@@ -390,9 +390,25 @@ impl BuilderAi {
         let _ = destroy(self, world, Direction::Down);
         robot_view(self, world);
 
-//        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Right, 1);
-//        let _ = go(self, world, Direction::Left);
-//        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = destroy(self, world, Direction::Down);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Left);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = destroy(self, world, Direction::Down);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = go(self, world, Direction::Right);
+        robot_view(self, world);
+        let _ = destroy(self, world, Direction::Up);
+        let _ = destroy(self, world, Direction::Down);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Up, 1);
+        robot_view(self, world);
 //        let _ = ToolStreetPicasso::create_street(self, world, 1, Direction::Left, 1);
 //        robot_view(self, world);
 //        let _ = destroy(self, world, Direction::Down);
